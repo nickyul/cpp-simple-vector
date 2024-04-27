@@ -37,15 +37,16 @@ public:
     ArrayPtr& operator=(const ArrayPtr&) = delete;
     
     ArrayPtr& operator=(ArrayPtr&& other) {
-        std::swap(raw_ptr_, other.raw_ptr_);
+        if (&raw_ptr_ != &other.raw_ptr_) {
+            std::swap(raw_ptr_, other.raw_ptr_);
+        }
         return *this;
     }
 
     // Прекращает владением массивом в памяти, возвращает значение адреса массива
     // После вызова метода указатель на массив должен обнулиться
     [[nodiscard]] Type* Release() noexcept {
-        Type* tmp = raw_ptr_;
-        raw_ptr_ = nullptr;
+        Type* tmp = std::exchange(raw_ptr_, nullptr);
         return tmp;
     }
 
