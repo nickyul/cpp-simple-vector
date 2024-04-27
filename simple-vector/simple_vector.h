@@ -35,21 +35,21 @@ public:
 
     // Создаёт вектор из size элементов, инициализированных значением value
     SimpleVector(size_t size, const Type& value)
-        : arr_(size), size_(size), capacity_(size)
+        : SimpleVector(size)
     {
         std::fill(begin(), end(), value);
     }
 
     // Создаёт вектор из std::initializer_list
     SimpleVector(std::initializer_list<Type> init)
-        : arr_(init.size()), size_(init.size()), capacity_(init.size())
+        : SimpleVector(init.size())
     {
         std::copy(init.begin(), init.end(), begin());
     }
 
     // Создаёт вектор из other вектора
-    SimpleVector(const SimpleVector& other) 
-    : arr_(other.size_), size_(other.size_), capacity_(other.size_)
+    SimpleVector(const SimpleVector& other)
+        : SimpleVector(other.size_)
     {
         std::copy(other.begin(), other.end(), begin());
     }
@@ -78,10 +78,8 @@ public:
                 Clear();
                 return *this;
             }
-        SimpleVector tmp(rhs.GetSize());
-        std::copy(rhs.begin(), rhs.end(), tmp.begin());
-        tmp.capacity_ = rhs.GetCapacity();
-        swap(tmp);
+            SimpleVector tmp(rhs);
+            swap(tmp);
         }
         return *this;
     }
@@ -124,6 +122,7 @@ public:
     // Если перед вставкой значения вектор был заполнен полностью,
     // вместимость вектора должна увеличиться вдвое, а для вектора вместимостью 0 стать равной 1
     Iterator Insert(ConstIterator pos, const Type& value) {
+        assert(pos >= cbegin() && pos <= cend());
         if (size_ == 0 && capacity_ == 0) {
             ArrayPtr<Type> tmp(1);
             tmp[0] = value;
@@ -147,6 +146,7 @@ public:
     }
 
     Iterator Insert(ConstIterator pos, Type&& value) {
+        assert(pos >= cbegin() && pos <= cend());
         if (size_ == 0 && capacity_ == 0) {
             ArrayPtr<Type> tmp(1);
             tmp[0] = std::move(value);
@@ -178,6 +178,7 @@ public:
 
     // Удаляет элемент вектора в указанной позиции
     Iterator Erase(ConstIterator pos) {
+        assert(pos >= cbegin() && pos < cend());
         auto index = std::distance(cbegin(), pos);
         std::move(&arr_[index + 1], end(), &arr_[index]);
         --size_;
@@ -208,11 +209,13 @@ public:
 
     // Возвращает ссылку на элемент с индексом index
     Type& operator[](size_t index) noexcept {
+        assert(index >= 0 && index < size_);
         return arr_[index];
     }
 
     // Возвращает константную ссылку на элемент с индексом index
     const Type& operator[](size_t index) const noexcept {
+        assert(index >= 0 && index < size_);
         return arr_[index];
     }
 
@@ -246,9 +249,7 @@ public:
             size_ = new_size;
         }
         else if (new_size <= capacity_) {
-            for (auto it = end(); it != end() + new_size; ++it) {
-                *it = std::move(Type{});
-            }
+            std::generate(end(), end() + new_size, []() { return Type{}; });
             size_ = new_size;
         }
         else {
@@ -305,12 +306,6 @@ private:
 
 template <typename Type>
 inline bool operator==(const SimpleVector<Type>& lhs, const SimpleVector<Type>& rhs) {
-    if (lhs.GetSize() != rhs.GetSize()) {
-        return false;
-    }
-    if (&lhs == &rhs) {
-        return true;
-    }
     return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
