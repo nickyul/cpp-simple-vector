@@ -30,26 +30,27 @@ public:
 
     // Создаёт вектор из size элементов, инициализированных значением по умолчанию
     explicit SimpleVector(size_t size)
-        : arr_(size), size_(size), capacity_(size) {
+        : SimpleVector(size, Type{}) 
+    {
     }
 
     // Создаёт вектор из size элементов, инициализированных значением value
     SimpleVector(size_t size, const Type& value)
-        : SimpleVector(size)
+        : arr_(size), size_(size), capacity_(size)
     {
         std::fill(begin(), end(), value);
     }
 
     // Создаёт вектор из std::initializer_list
     SimpleVector(std::initializer_list<Type> init)
-        : SimpleVector(init.size())
+        : arr_(init.size()), size_(init.size()), capacity_(init.size())
     {
         std::copy(init.begin(), init.end(), begin());
     }
 
     // Создаёт вектор из other вектора
     SimpleVector(const SimpleVector& other)
-        : SimpleVector(other.size_)
+        : arr_(other.size()), size_(other.size()), capacity_(other.size())
     {
         std::copy(other.begin(), other.end(), begin());
     }
@@ -60,18 +61,20 @@ public:
     }
 
     SimpleVector(SimpleVector&& other) {
-        arr_ = std::move(other.arr_);
+        arr_.swap(other.arr_);
         size_ = std::exchange(other.size_, 0);
         capacity_ = std::exchange(other.capacity_, 0);
     }
-    
+
     SimpleVector& operator=(SimpleVector&& other) {
-        arr_ = std::move(other.arr_);
-        size_ = std::exchange(other.size_, 0);
-        capacity_ = std::exchange(other.capacity_, 0);
+        if (this != &other) {
+            arr_.swap(other.arr_);
+            size_ = std::exchange(other.size_, 0);
+            capacity_ = std::exchange(other.capacity_, 0);
+        }
         return *this;
     }
-    
+
     SimpleVector& operator=(const SimpleVector& rhs) {
         if (this != &rhs) {
             if (rhs.IsEmpty()) {
@@ -90,7 +93,7 @@ public:
             std::copy(begin(), end(), &tmp[0]);
             arr_.swap(tmp);
             capacity_ = new_capacity;
-        }        
+        }
     }
 
     // Добавляет элемент в конец вектора
@@ -98,7 +101,7 @@ public:
     void PushBack(const Type& item) {
         if (size_ == capacity_) {
             Resize(size_ + 1);
-            arr_[size_-1] = item;
+            arr_[size_ - 1] = item;
         }
         else {
             arr_[size_] = item;
