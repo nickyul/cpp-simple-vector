@@ -35,9 +35,9 @@ public:
 
     // Запрещаем присваивание
     ArrayPtr& operator=(const ArrayPtr&) = delete;
-    
+
     ArrayPtr& operator=(ArrayPtr&& other) {
-        if (&raw_ptr_ != &other.raw_ptr_) {
+        if (this != &other) {
             std::swap(raw_ptr_, other.raw_ptr_);
         }
         return *this;
