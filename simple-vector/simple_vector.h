@@ -50,7 +50,7 @@ public:
 
     // Создаёт вектор из other вектора
     SimpleVector(const SimpleVector& other)
-        : arr_(other.size()), size_(other.size()), capacity_(other.size())
+        : arr_(other.size_), size_(other.size_), capacity_(other.size_)
     {
         std::copy(other.begin(), other.end(), begin());
     }
@@ -212,13 +212,13 @@ public:
 
     // Возвращает ссылку на элемент с индексом index
     Type& operator[](size_t index) noexcept {
-        assert(index >= 0 && index < size_);
+        assert(index < size_);
         return arr_[index];
     }
 
     // Возвращает константную ссылку на элемент с индексом index
     const Type& operator[](size_t index) const noexcept {
-        assert(index >= 0 && index < size_);
+        assert(index < size_);
         return arr_[index];
     }
 
